@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi_extensions/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi_extensions/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi_extensions/build" />
+      <excludeFolder url="file://$MODULE_DIR$/temp" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/dart/types/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/dart/types/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/dart/types/build" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/build" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/build" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/rust_builder/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/rust_builder/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/rust_builder/build" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/rust_builder/cargokit/build_tool/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/rust_builder/cargokit/build_tool/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/original/rust_builder/cargokit/build_tool/build" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/rust_builder/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/rust_builder/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/rust_builder/build" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/rust_builder/cargokit/build_tool/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/rust_builder/cargokit/build_tool/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/mangayomi/rust_builder/cargokit/build_tool/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
+  </component>
+</module>

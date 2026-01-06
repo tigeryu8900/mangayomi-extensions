@@ -1,0 +1,3 @@
+[submodule "mangayomi/original"]
+	path = mangayomi/original
+	url = https://github.com/kodjodevf/mangayomi.git

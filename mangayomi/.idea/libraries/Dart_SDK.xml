@@ -1,0 +1,31 @@
+<component name="libraryTable">
+  <library name="Dart SDK">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/_internal" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/async" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/cli" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/collection" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/concurrent" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/convert" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/core" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/developer" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/ffi" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/html" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/indexed_db" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/io" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/isolate" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/js" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/js_interop" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/js_interop_unsafe" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/js_util" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/math" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/mirrors" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/svg" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/typed_data" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/web_audio" />
+      <root url="file://$USER_HOME$/.asdf/installs/dart/3.10.7/lib/web_gl" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

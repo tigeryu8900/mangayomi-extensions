@@ -278,9 +278,8 @@ class AsmodeusScans extends MProvider {
     );
     MDocument doc = parseHtml(res.body);
     return doc
-            .selectFirst("#pages")
-            ?.children
-            ?.map(
+            .select("#pages img[uid]")!
+            .map(
               (img) => {
                 "url": "https://cdn.meowing.org/uploads/${img.attr("uid")}",
                 "headers": {"Referer": url},

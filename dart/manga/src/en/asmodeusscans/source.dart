@@ -1,7 +1,7 @@
 import '../../../../../model/source.dart';
 
 Source get asmodeusscansSource => _asmodeusscansSource;
-const _asmodeusscansVersion = "0.0.1";
+const _asmodeusscansVersion = "0.0.2";
 const _asmodeusscansSourceCodeUrl =
     "https://raw.githubusercontent.com/tigeryu8900/mangayomi-extensions/$branchName/dart/manga/src/en/asmodeusscans/asmodeusscans.dart";
 Source _asmodeusscansSource = Source(

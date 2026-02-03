@@ -1,7 +1,5 @@
 // {
 
-import 'dart:convert';
-
 import 'package:mangayomi/bridge_lib.dart';
 
 MStatus _toStatus(String? status) {
@@ -34,215 +32,10 @@ MPages _mangaListFromPage(Response res) {
   return MPages(list, doc.selectFirst(".pagination .next") != null);
 }
 
-List<String> _getImageURLs(Response res) {
-  MDocument doc = parseHtml(res.body);
-  MElement script = doc.selectFirst(".maincontent script")!;
-  String base64Str = RegExp(
-    r"(?<=')Wy(?:[\w\-\/]{4})+(?:Jd|[\w\-\/]iXQ==|[\w\-\/]{2}Il0=)",
-  ).firstMatch(script.text!)![0]!;
-  String jsonStr = utf8.decode(base64.decode(base64Str));
-  return jsonDecode(jsonStr);
-}
-
 const _imageHeaders = {
   "Content-Type": "image/webp",
   "Referer": "https://www.silentquill.net/",
 };
-
-Future<bool> _testImage(String url, String referer, Client client) async {
-  Response res = await client.head(Uri.parse(url), headers: _imageHeaders);
-  return res.statusCode == 200;
-}
-
-const chapterTemps = [
-  ["", ""],
-  ["Ch%20", ""],
-  ["Chapter%20", ""],
-];
-
-const pageTemps = [
-  ["", ".webp"],
-  ["", "_out.webp"],
-  ["Ch%20", "Page%20", ".webp"],
-  ["Chapter%20", "Page%20", ".webp"],
-];
-
-class _Subformat {
-  List<String> temp;
-  List<int> subs;
-
-  _Subformat({required this.temp, required this.subs});
-
-  int get length => subs.length;
-
-  String getString(List<String> values) {
-    int i = 0;
-    String res = "";
-    while (i < values.length) {
-      res += temp[i];
-      res += values[i].padLeft(subs[i]);
-      i++;
-    }
-    res += temp[i];
-    return res;
-  }
-}
-
-class _Format {
-  String prefix;
-  _Subformat chapter;
-  _Subformat page;
-
-  _Format({required this.prefix, required this.chapter, required this.page});
-
-  String getImageURL(String chapter, String page) {
-    String chapterSegment = this.chapter.getString([chapter]);
-    String pageSegment = this.page.length == 1
-        ? this.page.getString([page])
-        : this.page.getString([chapter, page]);
-    return "$prefix/$chapterSegment/$pageSegment";
-  }
-
-  Future<bool> test(String chapter, String referer, Client client) {
-    String url = getImageURL(chapter, "1");
-    return _testImage(url, referer, client);
-  }
-
-  Future<_Format?> getFuture(
-    String chapter,
-    String referer,
-    Client client,
-  ) async {
-    if (await test(chapter, referer, client)) {
-      return this;
-    }
-    return null;
-  }
-}
-
-Future<_Format> _getFormat(
-  String chapter,
-  String firstImage,
-  String referer,
-  Client client,
-) async {
-  Uri uri = Uri.parse(firstImage);
-  String origin = uri.origin;
-  String pathname = uri.path;
-  List<String> paths = pathname.split("/");
-  String pageFormat = paths.removeLast();
-  String chapterFormat = paths.removeLast();
-  String prefix = "$origin${paths.join("/")}";
-  List<String> chapterTemp = chapterFormat.split(
-    RegExp(r"(?<!%\w?)[\d\.]+", caseSensitive: false),
-  );
-  List<int> chapterSubs = RegExp(
-    r"(?<!%\w?)[\d\.]+",
-    caseSensitive: false,
-  ).allMatches(chapterFormat).map((e) => e[0]!.length).toList();
-  List<String> pageTemp = pageFormat.split(RegExp(r"(?<!%\w?)\d+"));
-  List<int> pageSubs = RegExp(
-    r"(?<!%\w?)\d+",
-  ).allMatches(pageFormat).map((e) => e[0]!.length).toList();
-  _Format format = _Format(
-    prefix: prefix,
-    chapter: _Subformat(temp: chapterTemp, subs: chapterSubs),
-    page: _Subformat(temp: pageTemp, subs: pageSubs),
-  );
-  if (await format.test(chapter, referer, client)) {
-    return format;
-  }
-  List<Future<_Format?>> futures = [];
-  if (pageTemp.length == 2) {
-    for (int i = chapter.length; i < 5; i++) {
-      for (int j = 1; j < 5; j++) {
-        _Format format = _Format(
-          prefix: prefix,
-          chapter: _Subformat(temp: chapterTemp, subs: [i]),
-          page: _Subformat(temp: pageTemp, subs: [j]),
-        );
-        futures.add(format.getFuture(chapter, referer, client));
-      }
-    }
-  } else {
-    List<Future<_Format?>> futures = [];
-    for (int i = chapter.length; i < 5; i++) {
-      for (int j = chapter.length; j < 5; j++) {
-        for (int k = 1; j < 5; j++) {
-          _Format format = _Format(
-            prefix: prefix,
-            chapter: _Subformat(temp: chapterTemp, subs: [i]),
-            page: _Subformat(temp: pageTemp, subs: [j, k]),
-          );
-          futures.add(format.getFuture(chapter, referer, client));
-        }
-      }
-    }
-  }
-  for (var future in futures) {
-    _Format? format = await future;
-    if (format != null) {
-      return format;
-    }
-  }
-  for (var chapterTemp in chapterTemps) {
-    for (var pageTemp in pageTemps) {
-      futures.clear();
-      if (pageTemp.length == 2) {
-        for (int i = chapter.length; i < 5; i++) {
-          for (int j = 1; j < 5; j++) {
-            _Format format = _Format(
-              prefix: prefix,
-              chapter: _Subformat(temp: chapterTemp, subs: [i]),
-              page: _Subformat(temp: pageTemp, subs: [j]),
-            );
-            futures.add(format.getFuture(chapter, referer, client));
-          }
-        }
-      } else {
-        List<Future<_Format?>> futures = [];
-        for (int i = chapter.length; i < 5; i++) {
-          for (int j = chapter.length; j < 5; j++) {
-            for (int k = 1; j < 5; j++) {
-              _Format format = _Format(
-                prefix: prefix,
-                chapter: _Subformat(temp: chapterTemp, subs: [i]),
-                page: _Subformat(temp: pageTemp, subs: [j, k]),
-              );
-              futures.add(format.getFuture(chapter, referer, client));
-            }
-          }
-        }
-      }
-      for (var future in futures) {
-        _Format? format = await future;
-        if (format != null) {
-          return format;
-        }
-      }
-    }
-  }
-  throw "format not found";
-}
-
-Future<int> _getNumPages(
-  String chapter,
-  _Format format,
-  String referer,
-  Client client,
-) async {
-  int l = 1;
-  int r = 100;
-  while (r - l > 1) {
-    int m = (l + r) >> 1;
-    if (await format.test(chapter, referer, client)) {
-      l = m;
-    } else {
-      r = m;
-    }
-  }
-  return l;
-}
 
 class Armageddon extends MProvider {
   Armageddon({required this.source});
@@ -344,42 +137,6 @@ class Armageddon extends MProvider {
     List<MElement> chapterElements = doc.select("#chapterlist li")!;
     List<MChapter> chapters = [];
 
-    Uri premiumUri = Uri(
-      scheme: uri.scheme,
-      host: "web.archive.org",
-      path: "/web/20250000000000id_/https://armageddontl.com${uri.path}",
-    );
-    Response premiumRes = await client.get(premiumUri);
-
-    if (premiumRes.statusCode == 200) {
-      MDocument premiumDoc = parseHtml(premiumRes.body);
-      List<MElement> premiumChapterElements = premiumDoc.select(
-        "#chapterlist li",
-      )!;
-      if (premiumChapterElements.length > chapterElements.length) {
-        premiumChapterElements = premiumChapterElements.sublist(
-          0,
-          premiumChapterElements.length - chapterElements.length,
-        );
-        for (var entry in premiumChapterElements) {
-          MElement a = entry.selectFirst("a")!;
-          chapters.add(
-            MChapter(
-              name: a
-                  .selectFirst(".chapternum")
-                  ?.text,
-              url: a.getHref,
-              dateUpload: parseDates(
-                [a.selectFirst(".chapterdate")!.text],
-                "MMMM d, y",
-                "en_US",
-              )[0],
-            ),
-          );
-        }
-      }
-    }
-
     for (var entry in chapterElements) {
       MElement a = entry.selectFirst("a")!;
       chapters.add(
@@ -423,38 +180,13 @@ class Armageddon extends MProvider {
   @override
   Future<List<Map<String, dynamic>>> getPageList(String url) async {
     Uri uri = Uri.parse(url);
-    if (uri.host == "www.silentquill.net") {
-      Response res = await client.get(uri);
-      List<String> images = _getImageURLs(res);
-      return images
-          .map((url) => {"url": url, "headers": _imageHeaders})
-          .toList();
-    } else {
-      Uri mangaUri = Uri(
-        scheme: uri.scheme,
-        host: "www.silentquill.net",
-        path: uri.path.replaceFirst(RegExp(r"-ch(?:apter)?(?:-\d+)+(?=/)"), ""),
-      );
-      String chapter = RegExp(
-        r"(?<=-ch(?:apter)?-)\d+(?:-\d+)*(?=/)",
-      ).firstMatch(uri.path)![0]!.replaceAll("-", ".");
-      Response mangaRes = await client.get(mangaUri);
-      MDocument mangaDoc = parseHtml(mangaRes.body);
-      MElement a = mangaDoc.selectFirst("#chapterlist li a")!;
-      Uri chapterUri = Uri.parse(a.getHref!);
-      Response chapterRes = await client.get(chapterUri);
-      List<String> images = _getImageURLs(chapterRes);
-      _Format format = await _getFormat(chapter, images[1], url, client);
-      int numPages = await _getNumPages(chapter, format, url, client);
-      List<Map<String, dynamic>> ret = [];
-      for (int i = 1; i <= numPages; i++) {
-        ret.add({
-          "url": format.getImageURL(chapter, i.toString()),
-          "headers": _imageHeaders,
-        });
-      }
-      return ret;
-    }
+    Response res = await client.get(uri);
+    MDocument doc = parseHtml(res.body);
+    String html = doc.selectFirst("#readerarea noscript")!.innerHtml!;
+    List<MElement> images = parseHtml(html).select("img")!;
+    return images
+        .map((e) => {"url": e.getSrc!, "headers": _imageHeaders})
+        .toList();
   }
 
   @override

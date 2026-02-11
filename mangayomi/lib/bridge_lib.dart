@@ -42,7 +42,7 @@ class Client extends http_interceptor.InterceptedClient {
   }
 }
 
-typedef Request = http_interceptor.Request;
+typedef BaseRequest = http_interceptor.BaseRequest;
 typedef Response = http_interceptor.Response;
 
 // eval/model/filter.dart

@@ -253,7 +253,7 @@ class NovelUpdates extends MProvider {
         RegExp(
           r"\b(?:v(\d+))?\s*?(?:c(\d+))?\s*?(?:(ex)(\d+)?)?\s*?(?:part(\d+))?\b",
         ),
-            (m) {
+        (m) {
           List<String> replace = [];
           if (m[1] != null) {
             replace.add("Volume ${m[1]}");
@@ -305,12 +305,16 @@ class NovelUpdates extends MProvider {
 
   @override
   Future<String> getHtmlContent(String name, String url) async {
-    String html = (await client.get(
-      Uri.parse(url),
-      headers: {"Priority": "u=0, i"},
-    )).body;
+    Uri uri = Uri.parse(url);
+
+    String html = (await client.get(uri, headers: {"Priority": "u=0, i"})).body;
     MDocument doc = parseHtml(html);
-    String domain = html;
+
+    String domain =
+        doc.selectFirst("link[rel='canonical']")?.getHref ??
+        doc.selectFirst("link[rel='shortlink']")?.getHref ??
+        doc.selectFirst("link[rel='alternate']")?.getHref ??
+        html;
 
     if (domain.contains("anotivereads")) {
       String title = doc.selectFirst("#comic-nav-name")?.text?.trim() ?? "";
@@ -429,6 +433,24 @@ class NovelUpdates extends MProvider {
       return " $content";
     }
 
+    if (domain.contains("vampiramtl")) {
+      MElement entryContent = doc.selectFirst(".entry-content")!;
+      String? link = entryContent.selectFirst(
+        ".has-text-align-center a[href]",
+      )?.getHref?.replaceFirst(RegExp(r"(?<=^/\w+)-"), "/");
+      if (link != null) {
+        html = (await client.get(
+          Uri(scheme: "https", host: "www.vampiramtl.com", path: link),
+          headers: {"Priority": "u=0, i"},
+        )).body;
+        doc = parseHtml(html);
+        entryContent = doc.selectFirst(".entry-content")!;
+      }
+      String title = doc.selectFirst(".entry-title")?.text?.trim() ?? "";
+      String? content = entryContent.innerHtml;
+      return " <h2>$title</h2><hr><br>$content";
+    }
+
     if (domain.contains("wattpad")) {
       String title = doc.selectFirst(".h2")?.text?.trim() ?? "";
       String? content = doc.selectFirst(".part-content > pre")?.innerHtml;
@@ -440,14 +462,14 @@ class NovelUpdates extends MProvider {
           doc.selectFirst(".cha-tit > .pr > .dib")?.text?.trim() ?? "";
       String? content =
           doc.selectFirst(".cha-words")?.innerHtml ??
-              doc.selectFirst("._content")?.innerHtml;
+          doc.selectFirst("._content")?.innerHtml;
       return " <h2>$title</h2><hr><br>$content";
     }
 
     if (domain.contains("wetriedtls")) {
       String? content =
           doc.selectFirst("script:contains(\"p dir=\")")?.innerHtml ??
-              doc.selectFirst("script:contains(\"u003c\")")?.innerHtml;
+          doc.selectFirst("script:contains(\"u003c\")")?.innerHtml;
       if (content != null) {
         String jsonString_wetried = content.substring(
           content.indexOf(".push(") + ".push(".length,
@@ -467,8 +489,8 @@ class NovelUpdates extends MProvider {
     if (domain.contains("zetrotranslation")) {
       String title =
           doc.selectFirst(".text-left h2")?.text?.trim() ??
-              doc.selectFirst(".active")?.text?.trim() ??
-              "";
+          doc.selectFirst(".active")?.text?.trim() ??
+          "";
       String? content = doc.selectFirst(".text-left")?.innerHtml;
       return " <h2>$title</h2><hr><br>$content";
     }
@@ -488,7 +510,7 @@ class NovelUpdates extends MProvider {
               .selectFirst("#page > .chapter_content > .cha-tit > div > div")
               ?.text
               ?.trim() ??
-              "";
+          "";
       String? content = doc
           .selectFirst("#page > .chapter_content > .cha-content > .cha-words")
           ?.innerHtml
@@ -511,7 +533,7 @@ class NovelUpdates extends MProvider {
               .selectFirst(".entry-header > .entry-title")
               ?.text
               ?.trim() ??
-              "";
+          "";
       String? content = redirectDoc
           .selectFirst(".entry-content")
           ?.innerHtml
@@ -526,20 +548,20 @@ class NovelUpdates extends MProvider {
       doc.selectFirst("meta[name=\"generator\"]")?.attr("content"),
     ];
     bool isBlogspot = blogspotElements.any(
-          (e) =>
-      (e?.toLowerCase().contains("blogspot") ?? false) ||
+      (e) =>
+          (e?.toLowerCase().contains("blogspot") ?? false) ||
           (e?.toLowerCase().contains("blogger") ?? false),
     );
 
     if (isBlogspot) {
       String title =
           doc.selectFirst("h3.post-title")?.text?.trim() ??
-              doc.selectFirst("h3.entry-title")?.text?.trim() ??
-              "";
+          doc.selectFirst("h3.entry-title")?.text?.trim() ??
+          "";
       String? content =
           doc.selectFirst("div.post-body")?.innerHtml ??
-              doc.selectFirst("div.entry-content")?.innerHtml ??
-              doc.selectFirst("div.content-post")?.innerHtml;
+          doc.selectFirst("div.entry-content")?.innerHtml ??
+          doc.selectFirst("div.content-post")?.innerHtml;
       return " <h2>$title</h2><hr><br>$content";
     }
 
@@ -550,53 +572,57 @@ class NovelUpdates extends MProvider {
       doc.selectFirst("footer")?.text,
     ];
     bool isWordpress = wordpressElements.any(
-          (e) =>
-      (e?.toLowerCase().contains("wordpress") ?? false) ||
+      (e) =>
+          (e?.toLowerCase().contains("wordpress") ?? false) ||
           (e?.toLowerCase().contains("site kit by google") ?? false),
     );
 
     String title =
         doc.selectFirst(".entry-title")?.text?.trim() ??
-            doc.selectFirst(".entry-title-main")?.text?.trim() ??
-            doc.selectFirst(".chapter__title")?.text?.trim() ??
-            doc.selectFirst(".sp-title")?.text?.trim() ??
-            doc.selectFirst(".title-content")?.text?.trim() ??
-            doc.selectFirst(".wp-block-post-title")?.text?.trim() ??
-            doc.selectFirst(".title_story")?.text?.trim() ??
-            doc.selectFirst(".active")?.text?.trim() ??
-            doc.selectFirst("head title")?.text?.trim() ??
-            doc.selectFirst("h1.leading-none ~ h2")?.text?.trim() ??
-            "";
+        doc.selectFirst(".entry-title-main")?.text?.trim() ??
+        doc.selectFirst(".chapter__title")?.text?.trim() ??
+        doc.selectFirst(".sp-title")?.text?.trim() ??
+        doc.selectFirst(".title-content")?.text?.trim() ??
+        doc.selectFirst(".wp-block-post-title")?.text?.trim() ??
+        doc.selectFirst(".title_story")?.text?.trim() ??
+        doc.selectFirst(".active")?.text?.trim() ??
+        doc.selectFirst("head title")?.text?.trim() ??
+        doc.selectFirst("h1.leading-none ~ h2")?.text?.trim() ??
+        "";
     String subtitle =
         doc.selectFirst(".cat-series")?.text?.trim() ??
-            doc.selectFirst("h1.leading-none ~ span")?.text?.trim() ??
-            "";
+        doc.selectFirst("h1.leading-none ~ span")?.text?.trim() ??
+        "";
     if (subtitle != "") {
       title = subtitle;
     }
     String? content =
         doc.selectFirst(".rdminimal")?.innerHtml ??
-            doc.selectFirst(".entry-content")?.innerHtml ??
-            doc.selectFirst(".chapter__content")?.innerHtml ??
-            doc.selectFirst(".prevent-select")?.innerHtml ??
-            doc.selectFirst(".text_story")?.innerHtml ??
-            doc.selectFirst(".contenta")?.innerHtml ??
-            doc.selectFirst(".single_post")?.innerHtml ??
-            doc.selectFirst(".post-entry")?.innerHtml ??
-            doc.selectFirst(".main-content")?.innerHtml ??
-            doc.selectFirst(".post-content")?.innerHtml ??
-            doc.selectFirst(".content")?.innerHtml ??
-            doc.selectFirst(".page-body")?.innerHtml ??
-            doc.selectFirst(".td-page-content")?.innerHtml ??
-            doc.selectFirst(".reader-content")?.innerHtml ??
-            doc.selectFirst("#content")?.innerHtml ??
-            doc.selectFirst("#the-content")?.innerHtml ??
-            doc.selectFirst("article.post")?.innerHtml;
+        doc.selectFirst(".entry-content")?.innerHtml ??
+        doc.selectFirst(".chapter__content")?.innerHtml ??
+        doc.selectFirst(".prevent-select")?.innerHtml ??
+        doc.selectFirst(".text_story")?.innerHtml ??
+        doc.selectFirst(".contenta")?.innerHtml ??
+        doc.selectFirst(".single_post")?.innerHtml ??
+        doc.selectFirst(".post-entry")?.innerHtml ??
+        doc.selectFirst(".main-content")?.innerHtml ??
+        doc.selectFirst(".post-content")?.innerHtml ??
+        doc.selectFirst(".content")?.innerHtml ??
+        doc.selectFirst(".page-body")?.innerHtml ??
+        doc.selectFirst(".td-page-content")?.innerHtml ??
+        doc.selectFirst(".reader-content")?.innerHtml ??
+        doc.selectFirst("#content")?.innerHtml ??
+        doc.selectFirst("#the-content")?.innerHtml ??
+        doc.selectFirst("article.post")?.innerHtml;
 
     if (isWordpress ||
         domain.contains("etherreads") ||
         domain.contains("soafp")) {
       return " <h2>$title</h2><hr><br>$content";
+    }
+
+    if (doc.selectFirst("#challenge-error-text") != null) {
+      throw "Failed to bypass Cloudflare";
     }
 
     return " <p>Domain not supported yet. Content might not load properly!</p><h2>$title</h2><hr><br>$content";

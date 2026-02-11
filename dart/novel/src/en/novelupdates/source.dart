@@ -1,7 +1,7 @@
 import '../../../../../model/source.dart';
 
 Source get novelupdatesSource => _novelupdatesSource;
-const _novelupdatesVersion = "0.0.1";
+const _novelupdatesVersion = "0.0.2";
 const _novelupdatesSourceCodeUrl =
     "https://raw.githubusercontent.com/tigeryu8900/mangayomi-extensions/$branchName/dart/novel/src/en/novelupdates/novelupdates.dart";
 Source _novelupdatesSource = Source(
